@@ -1,0 +1,55 @@
+service: js-node-ts-react-backend-service
+
+frameworkVersion: '3'
+
+provider:
+  iamRoleStatements:
+    - Action:
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Effect: Allow
+      Resource: '*'
+  memorySize: 128
+  name: aws
+  region: eu-north-1
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'local'}
+  versionFunctions: false
+  environment:
+    STAGE: ${self:custom.stage}
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  serverless-offline:
+    httpPort: 6600
+    websocketPort: 6601
+    lambdaPort: 6602
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+package:
+  excludeDevDependencies: true
+
+# NOTE: handler.default since we have export default handler in handler.js.
+functions:
+  backend:
+    handler: index.default
+    events:
+      - httpApi:
+          path: /hello
+          method: get
+      - httpApi:
+          path: /login
+          method: post
+      - httpApi:
+          path: /product-groups
+          method: get
+      - httpApi:
+          path: /products/{pgId}
+          method: get
+      - httpApi:
+          path: /product/{pgId}/{pId}
+          method: get
+
