@@ -24,7 +24,8 @@
     "nodemon": "^2.0.20",
     "papaparse": "^5.3.2",
     "serverless-http": "^3.1.0",
-    "simple-node-logger": "^21.8.12"
+    "simple-node-logger": "^21.8.12",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "axios": "^1.2.1",

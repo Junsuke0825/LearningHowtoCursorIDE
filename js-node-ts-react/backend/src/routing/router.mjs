@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { getProductGroups, getProducts, getProduct } from '../db/domain.mjs';
+import { getProductGroups, getProducts, getProduct, createProduct, createProductGroup } from '../db/domain_db.mjs';
 import { NotFoundError } from '../util/errors.mjs';
-import { validateUser } from '../db/users.mjs';
+import { validateUser } from '../db/users_db.mjs';
 import { verifyToken } from '../util/middleware.mjs';
 
 const router = express.Router();
@@ -73,6 +73,42 @@ router.get('/product/:pgId/:pId', verifyToken, async (req, res, next) => {
     const buf = await getProduct(parseInt(req.params.pgId, 10), parseInt(req.params.pId, 10));
     const ret = { ret: 'ok', product: buf };
     res.status(200).json(ret);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 新しい商品グループを作成
+router.post('/product-groups', verifyToken, async (req, res, next) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) {
+      throw new NotFoundError('Product group name is required');
+    }
+    const newGroup = await createProductGroup({ name, description });
+    const ret = { ret: 'ok', product_group: newGroup };
+    res.status(201).json(ret);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 新しい商品を作成
+router.post('/products', verifyToken, async (req, res, next) => {
+  try {
+    const { product_group_id, name, description, price, stock } = req.body;
+    if (!product_group_id || !name) {
+      throw new NotFoundError('Product group ID and name are required');
+    }
+    const newProduct = await createProduct({ 
+      product_group_id, 
+      name, 
+      description, 
+      price: price || 0, 
+      stock: stock || 0 
+    });
+    const ret = { ret: 'ok', product: newProduct };
+    res.status(201).json(ret);
   } catch (err) {
     next(err);
   }

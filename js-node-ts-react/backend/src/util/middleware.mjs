@@ -1,7 +1,7 @@
 import logger from './logger.mjs';
 import { production } from './config.mjs';
 import { NotFoundError } from './errors.mjs';
-import { validateToken } from '../db/users.mjs';
+import { validateToken } from '../db/users_db.mjs';
 
 // ErrorHandler.js
 // eslint-disable-next-line no-unused-vars
@@ -18,13 +18,17 @@ const errorHandler = (err, _req, res, _next) => {
   });
 };
 
-const verifyToken = (req, _res, next) => {
+const verifyToken = async (req, _res, next) => {
   const token = req.headers['x-token'];
   if (!token) {
     throw new NotFoundError('A token is required for authentication');
   }
-  validateToken(token);
-  return next();
+  try {
+    await validateToken(token);
+    return next();
+  } catch (error) {
+    throw new NotFoundError('Invalid token');
+  }
 };
 
 // export default errorHandler;
