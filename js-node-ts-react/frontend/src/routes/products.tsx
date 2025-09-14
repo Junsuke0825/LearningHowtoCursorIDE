@@ -149,7 +149,7 @@ export default function Products() {
   const pgIdNum = parseInt(pgId || "-1");
 
   const productGroupsSWR = useSWR<ProductGroupsResponse>(
-    [productGroupsUrl, "get", null, token],
+    token ? [productGroupsUrl, "get", null, token] : null,
     ([url, method, data, token]) =>
       fetchJSONWithToken({ url, method, data, token }),
   );
@@ -159,7 +159,7 @@ export default function Products() {
   const productsUrlWithPgId = productsUrl + `/${pgId}`;
 
   const productsSWR = useSWR<ProductsResponse>(
-    [productsUrlWithPgId, "get", null, token],
+    token ? [productsUrlWithPgId, "get", null, token] : null,
     ([url, method, data, token]) =>
       fetchJSONWithToken({ url, method, data, token }),
   );

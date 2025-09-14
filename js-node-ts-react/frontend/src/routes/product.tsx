@@ -83,7 +83,7 @@ export function Product() {
 
   const productUrlWithParams = `${productUrl}/${pgId}/${pId}`;
   const productSWR = useSWR<ProductResponse>(
-    [productUrlWithParams, "get", null, token],
+    token ? [productUrlWithParams, "get", null, token] : null,
     ([url, method, data, token]) =>
       fetchJSONWithToken({ url, method, data, token }),
   );

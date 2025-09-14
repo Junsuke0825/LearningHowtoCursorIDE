@@ -34,13 +34,13 @@ router.get('/hello', (req, res) => res.status(200).json({
 const jsonParser = bodyParser.json();
 
 // http POST http://localhost:6600/login username=jee password=joo Content-Type:application/json
-router.post('/login', jsonParser, (req, res, next) => {
+router.post('/login', jsonParser, async (req, res, next) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
       throw new NotFoundError('Invalid username or password');
     }
-    const token = validateUser(username, password);
+    const token = await validateUser(username, password);
     const ret = { ret: 'ok', token };
     res.status(200).json(ret);
   } catch (err) {
@@ -79,7 +79,7 @@ router.get('/product/:pgId/:pId', verifyToken, async (req, res, next) => {
 });
 
 // 新しい商品グループを作成
-router.post('/product-groups', verifyToken, async (req, res, next) => {
+router.post('/product-groups', jsonParser, verifyToken, async (req, res, next) => {
   try {
     const { name, description } = req.body;
     if (!name) {
@@ -89,12 +89,19 @@ router.post('/product-groups', verifyToken, async (req, res, next) => {
     const ret = { ret: 'ok', product_group: newGroup };
     res.status(201).json(ret);
   } catch (err) {
-    next(err);
+    if (err.message === 'Product group name already exists') {
+      res.status(400).json({
+        ret: 'error',
+        message: '既に該当のグループ名は登録済みです。'
+      });
+    } else {
+      next(err);
+    }
   }
 });
 
 // 新しい商品を作成
-router.post('/products', verifyToken, async (req, res, next) => {
+router.post('/products', jsonParser, verifyToken, async (req, res, next) => {
   try {
     const { product_group_id, name, description, price, stock } = req.body;
     if (!product_group_id || !name) {

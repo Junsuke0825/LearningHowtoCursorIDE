@@ -5,6 +5,8 @@ import Index from "./routes/index";
 import ProductGroups from "./routes/product_groups";
 import Products from "./routes/products";
 import { Product } from "./routes/product";
+import ProductGroupCreate from "./routes/product-group-create";
+import ProductCreate from "./routes/product-create";
 import "./index.css";
 import Login from "./routes/login";
 import { store } from "./utils/store";
@@ -27,8 +29,16 @@ const router = createBrowserRouter([
     element: <ProductGroups />,
   },
   {
+    path: "product-groups/create",
+    element: <ProductGroupCreate />,
+  },
+  {
     path: "products/:pgId",
     element: <Products />,
+  },
+  {
+    path: "products/create",
+    element: <ProductCreate />,
   },
   {
     path: "product/:pgId/:pId",

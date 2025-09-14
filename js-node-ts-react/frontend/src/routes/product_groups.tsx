@@ -91,8 +91,8 @@ export default function ProductGroups() {
   const navigate = useNavigate();
 
   const productGroupsSWR = useSWR<ProductGroupsResponse>(
-    [productGroupsUrl, "get", null, token],
-    ([url, method, data, token]) =>
+    token ? [productGroupsUrl, "get", null, token] : null,
+    ([url, method, data, token]: [string, string, any, string]) =>
       fetchJSONWithToken({ url, method, data, token }),
   );
 
@@ -113,7 +113,15 @@ export default function ProductGroups() {
     <div>
       <Header />
       <div className="p-4">
-        <p className="text-left text-lg font-bold p-4"> {title}</p>
+        <div className="flex justify-between items-center p-4">
+          <p className="text-left text-lg font-bold"> {title}</p>
+          <NavLink
+            to="/product-groups/create"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            新規作成
+          </NavLink>
+        </div>
         <div className="p-4">
           {productGroups && (
             <ProductGroupsTable productGroups={productGroups} />

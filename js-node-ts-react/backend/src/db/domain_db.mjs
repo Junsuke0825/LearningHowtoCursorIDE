@@ -177,6 +177,30 @@ async function deleteProduct(productId) {
 }
 
 /**
+ * 商品グループ名の重複チェック
+ * @param {string} name
+ * @returns {Promise<boolean>}
+ */
+async function checkProductGroupNameExists(name) {
+  logger.debug(`ENTER checkProductGroupNameExists, name: ${name}`);
+  
+  return new Promise((resolve, reject) => {
+    const query = 'SELECT COUNT(*) as count FROM product_groups WHERE name = ?';
+    
+    db.get(query, [name], (err, row) => {
+      if (err) {
+        logger.error('Database error in checkProductGroupNameExists:', err.message);
+        reject(new NotFoundError('Failed to check product group name'));
+      } else {
+        const exists = row.count > 0;
+        logger.debug(`Product group name exists: ${exists}`);
+        resolve(exists);
+      }
+    });
+  });
+}
+
+/**
  * 商品グループを追加
  * @param {Object} groupData
  * @returns {Promise<Object>}
@@ -185,6 +209,12 @@ async function createProductGroup(groupData) {
   logger.debug(`ENTER createProductGroup, groupData:`, groupData);
   
   const { name, description } = groupData;
+  
+  // 重複チェック
+  const nameExists = await checkProductGroupNameExists(name);
+  if (nameExists) {
+    throw new NotFoundError('Product group name already exists');
+  }
   
   return new Promise((resolve, reject) => {
     const query = `
@@ -217,4 +247,5 @@ export {
   updateProduct,
   deleteProduct,
   createProductGroup,
+  checkProductGroupNameExists,
 };

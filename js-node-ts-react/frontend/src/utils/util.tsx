@@ -14,16 +14,17 @@ export async function fetchJSON(params: {
   data?: any;
 }) {
   const { url, method, data } = params;
+  
   const response = await axios({
     method: method || "get",
     url,
     data,
   });
-  if (response.status === 200 && response.data.ret === "ok") {
-    //console.log(`response.data: ${JSON.stringify(response.data)}`);
+  
+  if ((response.status === 200 || response.status === 201) && response.data.ret === "ok") {
     return response.data;
   }
-  throw new Error(response.data.msg);
+  throw new Error(response.data.msg || 'Request failed');
 }
 
 export async function fetchJSONWithToken(params: {
@@ -33,17 +34,31 @@ export async function fetchJSONWithToken(params: {
   token?: string;
 }) {
   const { url, method, data, token } = params;
+  
   if (!token) {
     throw new Error("Token missing");
   }
-  const headers = token ? { "x-token": token } : {};
+  
+  // トークンが文字列でない場合は文字列に変換
+  let tokenString: string;
+  if (typeof token === 'string') {
+    tokenString = token;
+  } else if (typeof token === 'object' && token !== null) {
+    // オブジェクトの場合は、JSON.stringifyしてから文字列化
+    tokenString = JSON.stringify(token);
+  } else {
+    tokenString = String(token);
+  }
+  
+  const headers = { "x-token": tokenString };
+  
   const response = await axios({
     method: method || "get",
     url,
     data,
     headers,
   });
-  if (response.status === 200 && response.data.ret === "ok") {
+  if ((response.status === 200 || response.status === 201) && response.data.ret === "ok") {
     //console.log(`response.data: ${JSON.stringify(response.data)}`);
     return response.data;
   }

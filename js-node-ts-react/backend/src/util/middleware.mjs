@@ -1,6 +1,6 @@
 import logger from './logger.mjs';
 import { production } from './config.mjs';
-import { NotFoundError } from './errors.mjs';
+import { NotFoundError, ValidationError } from './errors.mjs';
 import { validateToken } from '../db/users_db.mjs';
 
 // ErrorHandler.js
@@ -20,14 +20,29 @@ const errorHandler = (err, _req, res, _next) => {
 
 const verifyToken = async (req, _res, next) => {
   const token = req.headers['x-token'];
+  logger.debug('Received token:', token ? `${token.substring(0, 20)}...` : 'undefined');
+  logger.debug('Token type:', typeof token);
+  
   if (!token) {
     throw new NotFoundError('A token is required for authentication');
   }
+  
+  // トークンが文字列でない場合はエラー
+  if (typeof token !== 'string') {
+    logger.debug('Token is not a string:', token);
+    throw new NotFoundError('Invalid token format');
+  }
+  
   try {
     await validateToken(token);
     return next();
   } catch (error) {
-    throw new NotFoundError('Invalid token');
+    logger.debug('Token validation failed:', error.message);
+    if (error instanceof ValidationError) {
+      throw error;
+    } else {
+      throw new NotFoundError('Invalid token');
+    }
   }
 };
 

@@ -45,7 +45,12 @@ function generateToken(username) {
 function validateToken(token) {
   return new Promise((resolve, reject) => {
     try {
+      logger.debug('validateToken - received token:', token);
+      logger.debug('validateToken - token type:', typeof token);
+      logger.debug('validateToken - token length:', token ? token.length : 'undefined');
+      
       const decodedToken = jwt.verify(token, SECRET);
+      logger.debug('validateToken - decoded token:', decodedToken);
       
       // データベースでセッションを確認
       const query = 'SELECT * FROM sessions WHERE token = ? AND expires_at > datetime("now")';
@@ -54,14 +59,18 @@ function validateToken(token) {
           logger.error('Database error in validateToken:', err.message);
           reject(new ValidationError('Database error'));
         } else if (!session) {
+          logger.debug('No session found for token');
           reject(new ValidationError('Token not found in session database or expired'));
         } else if (session.username !== decodedToken.username) {
+          logger.debug('Username mismatch:', session.username, 'vs', decodedToken.username);
           reject(new ValidationError('Token username does not match session username'));
         } else {
+          logger.debug('Token validation successful');
           resolve(decodedToken);
         }
       });
     } catch (error) {
+      logger.debug('JWT verification failed:', error.message);
       reject(new ValidationError('Invalid token'));
     }
   });
